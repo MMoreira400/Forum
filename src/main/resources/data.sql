@@ -1,0 +1,1 @@
+INSERT INTO USUARIOS (EMAIL,PASSWORD,USERNAME) VALUES ('teste@email','teste12345','mmoreira400');
