@@ -2,6 +2,8 @@ package com.forun.Forum.model.reponse;
 
 import com.forun.Forum.model.entites.User;
 
+import java.util.Optional;
+
 public class UserDTO {
 
     private Long id;
@@ -13,6 +15,8 @@ public class UserDTO {
         this.email = user.getEmail();
         this.username = user.getUsername();
     }
+
+
 
 
     public String getEmail() {

@@ -1,8 +1,11 @@
 package com.forun.Forum.model.entites;
 
+import com.forun.Forum.model.repositories.UserRepository;
+
 import javax.persistence.*;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
 import java.util.List;
-import java.util.Objects;
 
 @Entity
 @Table(name = "USUARIOS")
@@ -11,8 +14,13 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long autoId;
+    @NotBlank @Email
+    //@Column( nullable=false, unique=true)
     private String email;
+    @NotBlank
+    //@Column( nullable=false, unique=true)
     private String username;
+    @NotBlank
     private String password;
     @OneToMany(targetEntity = Postagem.class, cascade = CascadeType.ALL)
     private List<Postagem> Postagem;
@@ -26,6 +34,7 @@ public class User {
         this.password = password;
     }
 
+
     public String getEmail() {
         return email;
     }
@@ -38,21 +47,34 @@ public class User {
         return autoId;
     }
 
+    public List<com.forun.Forum.model.entites.Postagem> getPostagem() {
+        return Postagem;
+    }
+
     public String getPassword() {
         return password;
     }
+
+
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
+
         User user = (User) o;
-        return Objects.equals(email, user.email) && Objects.equals(username, user.username) && Objects.equals(password, user.password);
+
+        if (getEmail() != null ? !getEmail().equals(user.getEmail()) : user.getEmail() != null) return false;
+        if (!getUsername().equals(user.getUsername())) return false;
+        return getPassword().equals(user.getPassword());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(email, username, password);
+        int result = getEmail().hashCode();
+        result = 31 * result + getUsername().hashCode();
+        result = 31 * result + getPassword().hashCode();
+        return result;
     }
 
     @Override
@@ -64,5 +86,10 @@ public class User {
                 ", password='" + password + '\'' +
                 ", Postagem=" + Postagem +
                 '}';
+    }
+
+
+    public void setPostagem(Postagem postagem) {
+        this.Postagem.add(postagem);
     }
 }

@@ -2,6 +2,8 @@ package com.forun.Forum.controllers;
 
 import com.forun.Forum.model.entites.Postagem;
 import com.forun.Forum.model.entites.User;
+import com.forun.Forum.model.reponse.PostagemDTO;
+import com.forun.Forum.model.reponse.UserDTO;
 import com.forun.Forum.model.repositories.PostagemRepository;
 import com.forun.Forum.model.repositories.UserRepository;
 import com.forun.Forum.model.request.NovaPostagemRequest;
@@ -12,6 +14,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.transaction.Transactional;
+import javax.validation.Valid;
 import java.net.URI;
 import java.util.Optional;
 
@@ -25,31 +29,28 @@ public class PostagemController {
     UserRepository userRepository;
 
     @PostMapping("/create")
-    public ResponseEntity<Postagem> registraNovaPostagem(@RequestBody NovaPostagemRequest novaPostagemRequest, UriComponentsBuilder uriComponentsBuilder) {
-        try {
+    public ResponseEntity<Postagem> registraNovaPostagem(@RequestBody @Valid NovaPostagemRequest novaPostagemRequest, UriComponentsBuilder uriComponentsBuilder) {
 
-            User usuarioValidacao = userRepository.findByEmailContainingIgnoreCase(novaPostagemRequest.getUsuario().getEmail());
+        Postagem novaPostagem = new Postagem(novaPostagemRequest.getPostagem(),userRepository.findByEmailContainingIgnoreCase(novaPostagemRequest.getUsuario().getEmail()));
+        postagemRepository.saveAndFlush(novaPostagem);
 
-            if (usuarioValidacao.hashCode() != novaPostagemRequest.getUsuario().hashCode()) { // Valida valores do usuario conforme Hash
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Usuário incorreto");
-            }
+            URI uri = uriComponentsBuilder.path("/post/{id}").buildAndExpand(novaPostagem.getAutoId()).toUri();
 
-            Postagem postagem = new Postagem(novaPostagemRequest.getPostagem().getTitulo(),novaPostagemRequest.getPostagem().getDescricao(),usuarioValidacao);
+            return ResponseEntity.created(uri).body(novaPostagem);
 
-            postagemRepository.saveAndFlush(postagem);
-
-            URI uri = uriComponentsBuilder.path("/post/{id}").buildAndExpand(postagem.getAutoId()).toUri();
-
-            return ResponseEntity.created(uri).body(postagem);
-
-        } catch (java.lang.NullPointerException e){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Usuário informado inválido");
         }
-    }
+
+
 
     @GetMapping("/{id}")
-    public Optional<Postagem> retornarPostagemPorId(@PathVariable Long id){
-        return postagemRepository.findById(id);
+    public ResponseEntity retornarPostagemPorId(@PathVariable Long id){
+
+        Optional<Postagem> postagem = postagemRepository.findById(id);
+
+        if(postagem.isPresent()){
+            return ResponseEntity.ok(new PostagemDTO(postagem.get()));
+        }
+        return ResponseEntity.notFound().build();
     }
 
 }

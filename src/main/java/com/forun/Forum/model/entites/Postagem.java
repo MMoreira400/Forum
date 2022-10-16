@@ -1,6 +1,9 @@
 package com.forun.Forum.model.entites;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.util.Date;
 
 @Entity
@@ -9,7 +12,11 @@ public class Postagem {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO  )
     private Long autoId;
+    @NotBlank
+    @Size(min = 5 , max = 100)
     private String titulo;
+    @NotBlank
+    @Size(min = 5, max = 600 )
     private String descricao;
     private Date dataCriacao = new Date();
     @ManyToOne(targetEntity = User.class, cascade = CascadeType.ALL)
@@ -23,14 +30,19 @@ public class Postagem {
         this.user = user;
     }
 
-
-
     public Postagem(String titulo, String descricao) {
         this.titulo = titulo;
         this.descricao = descricao;
     }
 
     public Postagem() {
+    }
+
+    public Postagem(Postagem postagem, User usuarioValidacao) {
+        this.titulo = postagem.getTitulo();
+        this.descricao = postagem.getDescricao();
+        this.user = usuarioValidacao;
+        this.status = postagem.getStatus();
     }
 
     public Long getAutoId() {

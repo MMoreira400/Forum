@@ -3,7 +3,6 @@ package com.forun.Forum.controllers;
 import com.forun.Forum.model.reponse.UserDTO;
 import com.forun.Forum.model.entites.User;
 import com.forun.Forum.model.repositories.UserRepository;
-import com.sun.istack.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +10,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.transaction.Transactional;
+import javax.validation.Valid;
 import java.net.URI;
 import java.util.Optional;
 
@@ -23,11 +24,8 @@ public class UserController {
 
 
     @PostMapping("/register")
-    public ResponseEntity<UserDTO> registrarUsuario(@RequestBody @NotNull User usuario, UriComponentsBuilder uriBuilder) {
-
-        if(userRepository.existsByEmail(usuario.getEmail())){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Já existe usuario com o mesmo email!");
-        }
+    @Transactional
+    public ResponseEntity<UserDTO> registrarUsuario(@RequestBody @Valid User usuario, UriComponentsBuilder uriBuilder) {
 
         userRepository.saveAndFlush(usuario);
         UserDTO userDTO = new UserDTO(usuario);
@@ -37,8 +35,14 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public Optional<User> retornarUsuarioPorId(@PathVariable Long id){
-            return userRepository.findById(id);
+    public ResponseEntity retornarUsuarioPorId(@PathVariable Long id){
+
+        Optional<User> usuario =  userRepository.findById(id);
+
+        if(usuario.isPresent()){
+        return ResponseEntity.ok(new UserDTO(usuario.get()));
+        }
+        return ResponseEntity.notFound().build();
     }
 
 
