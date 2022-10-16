@@ -17,7 +17,10 @@ import org.springframework.web.util.UriComponentsBuilder;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/post")
@@ -40,7 +43,18 @@ public class PostagemController {
 
         }
 
-
+    @GetMapping()
+    public List<PostagemDTO> listaTodasPostagens(String username){
+        ArrayList<PostagemDTO> postagemDTOS = new ArrayList<>();
+        if(username != null && userRepository.findByUsername(username)!= null){
+            (postagemRepository.findAllByUserAutoId(userRepository.findByUsername(username).getAutoId())).forEach(e ->{
+                postagemDTOS.add(new PostagemDTO(e));
+                });
+            return postagemDTOS;
+        }else{
+            return postagemRepository.findAll().stream().map(PostagemDTO::new).collect(Collectors.toList());
+        }
+    }
 
     @GetMapping("/{id}")
     public ResponseEntity retornarPostagemPorId(@PathVariable Long id){
