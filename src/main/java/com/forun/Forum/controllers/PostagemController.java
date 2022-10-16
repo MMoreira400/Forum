@@ -1,21 +1,16 @@
 package com.forun.Forum.controllers;
 
 import com.forun.Forum.model.entites.Postagem;
-import com.forun.Forum.model.entites.User;
 import com.forun.Forum.model.reponse.PostagemDTO;
-import com.forun.Forum.model.reponse.UserDTO;
 import com.forun.Forum.model.repositories.PostagemRepository;
 import com.forun.Forum.model.repositories.UserRepository;
 import com.forun.Forum.model.request.NovaPostagemRequest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import javax.transaction.Transactional;
 import javax.validation.Valid;
+import javax.websocket.server.PathParam;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,13 +39,10 @@ public class PostagemController {
         }
 
     @GetMapping()
-    public List<PostagemDTO> listaTodasPostagens(String username){
-        ArrayList<PostagemDTO> postagemDTOS = new ArrayList<>();
-        if(username != null && userRepository.findByUsername(username)!= null){
-            (postagemRepository.findAllByUserAutoId(userRepository.findByUsername(username).getAutoId())).forEach(e ->{
-                postagemDTOS.add(new PostagemDTO(e));
-                });
-            return postagemDTOS;
+    public List<PostagemDTO> listaTodasPostagens(@PathParam("username") String username){
+
+        if(username != null && userRepository.findByUsername(username) != null){
+            return postagemRepository.findAllByUserAutoId(userRepository.findByUsername(username).getAutoId()).stream().map(PostagemDTO::new).collect(Collectors.toList());
         }else{
             return postagemRepository.findAll().stream().map(PostagemDTO::new).collect(Collectors.toList());
         }

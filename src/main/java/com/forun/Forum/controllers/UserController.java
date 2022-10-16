@@ -4,10 +4,8 @@ import com.forun.Forum.model.reponse.UserDTO;
 import com.forun.Forum.model.entites.User;
 import com.forun.Forum.model.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.transaction.Transactional;
