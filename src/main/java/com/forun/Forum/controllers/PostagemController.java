@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import javax.transaction.Transactional;
 import javax.validation.Valid;
 import javax.websocket.server.PathParam;
 import java.net.URI;
@@ -27,14 +29,15 @@ public class PostagemController {
     UserRepository userRepository;
 
     @PostMapping("/create")
-    public ResponseEntity<Postagem> registraNovaPostagem(@RequestBody @Valid NovaPostagemRequest novaPostagemRequest, UriComponentsBuilder uriComponentsBuilder) {
+    public ResponseEntity<PostagemDTO> registraNovaPostagem(@RequestBody @Valid NovaPostagemRequest novaPostagemRequest, UriComponentsBuilder uriComponentsBuilder) {
 
         Postagem novaPostagem = new Postagem(novaPostagemRequest.getPostagem(),userRepository.findByEmailContainingIgnoreCase(novaPostagemRequest.getUsuario().getEmail()));
-        postagemRepository.saveAndFlush(novaPostagem);
 
-            URI uri = uriComponentsBuilder.path("/post/{id}").buildAndExpand(novaPostagem.getAutoId()).toUri();
+        //postagemRepository.saveAndFlush(novaPostagem);
+        novaPostagemRequest.adicionaePersistePostagemNoUsuario(userRepository,novaPostagem,userRepository.findByEmailContainingIgnoreCase(novaPostagemRequest.getUsuario().getEmail()));
+        URI uri = uriComponentsBuilder.path("/post/{id}").buildAndExpand(novaPostagem.getAutoId()).toUri();
 
-            return ResponseEntity.created(uri).body(novaPostagem);
+            return ResponseEntity.created(uri).body(new PostagemDTO(novaPostagem));
 
         }
 

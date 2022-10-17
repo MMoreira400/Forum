@@ -26,6 +26,12 @@ public class NovaPostagemRequest {
         return postagem;
     }
 
+    public User adicionaePersistePostagemNoUsuario(UserRepository userRepository, Postagem postagem,User usuario){
+        usuario.setPostagem(postagem);
+        userRepository.saveAndFlush(usuario);
+        return usuario;
+    }
+
     @Override
     public String
     toString() {
