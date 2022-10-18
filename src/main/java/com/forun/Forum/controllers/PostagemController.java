@@ -6,6 +6,9 @@ import com.forun.Forum.model.repositories.PostagemRepository;
 import com.forun.Forum.model.repositories.UserRepository;
 import com.forun.Forum.model.request.NovaPostagemRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -32,8 +35,6 @@ public class PostagemController {
     public ResponseEntity<PostagemDTO> registraNovaPostagem(@RequestBody @Valid NovaPostagemRequest novaPostagemRequest, UriComponentsBuilder uriComponentsBuilder) {
 
         Postagem novaPostagem = new Postagem(novaPostagemRequest.getPostagem(),userRepository.findByEmailContainingIgnoreCase(novaPostagemRequest.getUsuario().getEmail()));
-
-        //postagemRepository.saveAndFlush(novaPostagem);
         novaPostagemRequest.adicionaePersistePostagemNoUsuario(userRepository,novaPostagem,userRepository.findByEmailContainingIgnoreCase(novaPostagemRequest.getUsuario().getEmail()));
         URI uri = uriComponentsBuilder.path("/post/{id}").buildAndExpand(novaPostagem.getAutoId()).toUri();
 
@@ -42,12 +43,14 @@ public class PostagemController {
         }
 
     @GetMapping()
-    public List<PostagemDTO> listaTodasPostagens(@PathParam("username") String username){
+    public Page<PostagemDTO> listaTodasPostagens(@PathParam("username") String username, @RequestParam int pagina, @RequestParam int qnt ){
+
+        Pageable paginacao = PageRequest.of(pagina,qnt);
 
         if(username != null && userRepository.findByUsername(username) != null){
-            return postagemRepository.findAllByUserAutoId(userRepository.findByUsername(username).getAutoId()).stream().map(PostagemDTO::new).collect(Collectors.toList());
+            return PostagemDTO.converterPostagem(postagemRepository.findAllByUserAutoId(userRepository.findByUsername(username).getAutoId(), paginacao));
         }else{
-            return postagemRepository.findAll().stream().map(PostagemDTO::new).collect(Collectors.toList());
+            return PostagemDTO.converterPostagem(postagemRepository.findAll(paginacao));
         }
     }
 

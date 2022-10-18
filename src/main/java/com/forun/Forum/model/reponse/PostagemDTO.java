@@ -3,7 +3,8 @@ package com.forun.Forum.model.reponse;
 
 import com.forun.Forum.model.entites.Postagem;
 import com.forun.Forum.model.entites.StatusPostagem;
-import com.forun.Forum.model.entites.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.Date;
 
@@ -41,5 +42,9 @@ public class PostagemDTO {
 
     public StatusPostagem getStatusPostagem() {
         return statusPostagem;
+    }
+
+    public static Page<PostagemDTO> converterPostagem(Page<Postagem> postagemPage){
+        return postagemPage.map(PostagemDTO::new);
     }
 }
