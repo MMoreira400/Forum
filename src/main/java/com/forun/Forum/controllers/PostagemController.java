@@ -5,6 +5,8 @@ import com.forun.Forum.model.reponse.PostagemDTO;
 import com.forun.Forum.model.repositories.PostagemRepository;
 import com.forun.Forum.model.repositories.UserRepository;
 import com.forun.Forum.model.request.NovaPostagemRequest;
+import com.forun.Forum.model.request.UpdatePostagemRequest;
+import org.hibernate.sql.Update;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -13,14 +15,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.transaction.Transactional;
 import javax.validation.Valid;
 import javax.websocket.server.PathParam;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/post")
@@ -48,9 +46,9 @@ public class PostagemController {
         Pageable paginacao = PageRequest.of(pagina,qnt);
 
         if(username != null && userRepository.findByUsername(username) != null){
-            return PostagemDTO.converterPostagem(postagemRepository.findAllByUserAutoId(userRepository.findByUsername(username).getAutoId(), paginacao));
+            return PostagemDTO.converterPostagemPage(postagemRepository.findAllByUserAutoId(userRepository.findByUsername(username).getAutoId(), paginacao));
         }else{
-            return PostagemDTO.converterPostagem(postagemRepository.findAll(paginacao));
+            return PostagemDTO.converterPostagemPage(postagemRepository.findAll(paginacao));
         }
     }
 
@@ -61,6 +59,17 @@ public class PostagemController {
 
         if(postagem.isPresent()){
             return ResponseEntity.ok(new PostagemDTO(postagem.get()));
+        }
+        return ResponseEntity.notFound().build();
+    }
+    @PutMapping("/{id}")
+    public ResponseEntity<PostagemDTO> updatePostagem(@PathVariable("id") Long idPostagem, @RequestBody @Valid UpdatePostagemRequest postagemUpdate){
+
+        Optional<Postagem> postagemAlteracao = postagemRepository.findById(idPostagem);
+
+        if(postagemAlteracao.isPresent()){
+            UpdatePostagemRequest.alteraePersistePostagem(postagemRepository, idPostagem,postagemUpdate);
+            return ResponseEntity.ok(new PostagemDTO(postagemAlteracao.get()));
         }
         return ResponseEntity.notFound().build();
     }
