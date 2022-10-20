@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -41,15 +43,15 @@ public class PostagemController {
         }
 
     @GetMapping()
-    public Page<PostagemDTO> listaTodasPostagens(@PathParam("username") String username, @RequestParam int pagina, @RequestParam int qnt ){
-
-        Pageable paginacao = PageRequest.of(pagina,qnt);
+    public Page<PostagemDTO> listaTodasPostagens(@PathParam("username") String username,
+                                                 @PageableDefault(page = 0, size = 10,sort = "dataCriacao", direction = Sort.Direction.DESC) Pageable paginacao){
 
         if(username != null && userRepository.findByUsername(username) != null){
             return PostagemDTO.converterPostagemPage(postagemRepository.findAllByUserAutoId(userRepository.findByUsername(username).getAutoId(), paginacao));
         }else{
             return PostagemDTO.converterPostagemPage(postagemRepository.findAll(paginacao));
         }
+
     }
 
     @GetMapping("/{id}")
