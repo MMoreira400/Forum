@@ -8,6 +8,8 @@ import com.forun.Forum.model.request.NovaPostagemRequest;
 import com.forun.Forum.model.request.UpdatePostagemRequest;
 import org.hibernate.sql.Update;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -32,6 +34,7 @@ public class PostagemController {
     UserRepository userRepository;
 
     @PostMapping("/create")
+    @CacheEvict( value = {"postagemPorId"} )
     public ResponseEntity<PostagemDTO> registraNovaPostagem(@RequestBody @Valid NovaPostagemRequest novaPostagemRequest, UriComponentsBuilder uriComponentsBuilder) {
 
         Postagem novaPostagem = new Postagem(novaPostagemRequest.getPostagem(),userRepository.findByEmailContainingIgnoreCase(novaPostagemRequest.getUsuario().getEmail()));
@@ -55,6 +58,7 @@ public class PostagemController {
     }
 
     @GetMapping("/{id}")
+    @Cacheable(value = "postagemPorId")
     public ResponseEntity retornarPostagemPorId(@PathVariable Long id){
 
         Optional<Postagem> postagem = postagemRepository.findById(id);
@@ -65,6 +69,7 @@ public class PostagemController {
         return ResponseEntity.notFound().build();
     }
     @PutMapping("/{id}")
+    @CacheEvict( value = {"postagemPorId"} )
     public ResponseEntity<PostagemDTO> updatePostagem(@PathVariable("id") Long idPostagem, @RequestBody @Valid UpdatePostagemRequest postagemUpdate){
 
         Optional<Postagem> postagemAlteracao = postagemRepository.findById(idPostagem);

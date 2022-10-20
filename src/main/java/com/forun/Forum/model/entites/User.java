@@ -1,29 +1,33 @@
 package com.forun.Forum.model.entites;
 
 import com.forun.Forum.model.repositories.UserRepository;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @Entity
-@Table(name = "USUARIOS")
-public class User {
+@Table(name = "USUARIO")
+public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long autoId;
     @NotBlank @Email
-    //@Column( nullable=false, unique=true)
     private String email;
     @NotBlank
-    //@Column( nullable=false, unique=true)
     private String username;
     @NotBlank
     private String password;
     @OneToMany(targetEntity = Postagem.class, cascade = CascadeType.ALL)
     private List<Postagem> Postagem;
+    @ManyToMany(fetch = FetchType.EAGER)
+    private List<Perfil> perfil = new ArrayList<>();
 
     public User() {
     }
@@ -33,6 +37,7 @@ public class User {
         this.username = username;
         this.password = password;
     }
+
 
 
     public String getEmail() {
@@ -51,11 +56,9 @@ public class User {
         return Postagem;
     }
 
-    public String getPassword() {
-        return password;
+    public void setPostagem(Postagem postagem) {
+        this.Postagem.add(postagem);
     }
-
-
 
     @Override
     public boolean equals(Object o) {
@@ -78,18 +81,32 @@ public class User {
     }
 
     @Override
-    public String toString() {
-        return "User{" +
-                "autoId=" + autoId +
-                ", email='" + email + '\'' +
-                ", username='" + username + '\'' +
-                ", password='" + password + '\'' +
-                ", Postagem=" + Postagem +
-                '}';
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return this.perfil;
     }
 
+    @Override
+    public String getPassword() {
+        return this.password;
+    }
 
-    public void setPostagem(Postagem postagem) {
-        this.Postagem.add(postagem);
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
     }
 }
