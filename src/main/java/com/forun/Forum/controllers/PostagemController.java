@@ -49,8 +49,8 @@ public class PostagemController {
     public Page<PostagemDTO> listaTodasPostagens(@PathParam("username") String username,
                                                  @PageableDefault(page = 0, size = 10,sort = "dataCriacao", direction = Sort.Direction.DESC) Pageable paginacao){
 
-        if(username != null && userRepository.findByUsername(username) != null){
-            return PostagemDTO.converterPostagemPage(postagemRepository.findAllByUserAutoId(userRepository.findByUsername(username).getAutoId(), paginacao));
+        if(username != null && userRepository.findByUsername(username).isPresent()){
+            return PostagemDTO.converterPostagemPage(postagemRepository.findAllByUserAutoId(userRepository.findByUsername(username).get().getAutoId(), paginacao));
         }else{
             return PostagemDTO.converterPostagemPage(postagemRepository.findAll(paginacao));
         }
